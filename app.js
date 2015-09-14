@@ -15,3 +15,13 @@ var reddit = new Snoocore({
     scope: [ 'identity', 'read', 'vote' ]
   }
 });
+
+reddit('/r/nfl/hot').get().then(function(result) {
+  var submission = result.data.children[0];
+  console.log(submission);
+  var submissionDate = new Date(result.data.children[0].data.created_utc * 1000);
+  var now = new Date();
+  console.log(submissionDate);
+  console.log(now);
+  console.log((now.getTime() - submissionDate.getTime()) / 1000); 
+});
