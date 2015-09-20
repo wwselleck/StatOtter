@@ -22,34 +22,64 @@ var reddit = new Snoocore({
 var already_commented = [];
 var url = '/r/' + config.target_subreddit + '/comments';
 
+function analyzeComment(comment, stats){
+  var commentData = comment.data;
+  Logger.headerSmall('Analyzing comment ' + commentData.id);
+  console.log(comment);
+
+  var author = commentData.author;
+  stats.commenters[author] ? stats.commenters[author] += 1 : stats.commenters[author] = 1;
+
+  var words = commentData.body.split(" ");
+  words.forEach(word => {
+    stats.words[word] ? stats.words[word] += 1 : stats.words[word] = 1;
+  });
+
+  var authorFlair = commentData.author_flair_text;
+  stats.flairCount[authorFlair] ? stats.flairCount[authorFlair] += 1 : stats.flairCount[authorFlair] = 1;
+
+  if(commentData.replies){
+    commentData.replies.data.children.forEach(reply => {
+      analyzeComment(reply, stats);
+    })
+  }
+}
 
 function analyzeAndPost(comment){
   var parentPostId = comment.data.link_id.slice(3);
   var url = '/r/' + comment.data.subreddit + '/comments/' + parentPostId;
-  return reddit(url).get().then((commentTree) => {
-    var linkListing = commentTree[0];
-    var linkInfo = linkListing.data.children[0];
-    var comments = commentTree[1].data.children;
+
+  return reddit(url).listing({}, {listingIndex: 0}).then((linkListing) => {
+    console.log(linkListing);
+    var linkInfo = linkListing.children[0];
 
     Logger.headerSmall('Parent Link Info');
     console.log(linkInfo);
-    var stats = {
-      numberOfComments: linkInfo.num_comments,
-      commenters: {},
-      words: {},
-      flairCount: {}
-    };
 
-    comments.forEach((currentComment) =>{
-      var currentCommentData = currentComment.data;
-      console.log(currentComment);
-    });
+    return reddit(url).listing({}, {listingIndex: 1}).then(commentListing => {
+      var comments = commentListing.children;
+      var stats = {
+        numberOfComments: linkInfo.num_comments,
+        commenters: {},
+        words: {},
+        flairCount: {}
+      };
 
+      Logger.headerMedium('Analyzing comments...');
+      comments.forEach((currentComment) =>{
+        if(currentComment.kind === 't1'){
+          analyzeComment(currentComment, stats);
+        }
+      });
+
+      console.log(stats);
+
+      });
   });
 };
 
 function run(){
-  Logger.header('Fetching the latest comments from ' + url);
+  Logger.headerLarge('Fetching the latest comments from ' + url);
   return new Promise((resolve, reject) => {
     //Get latest 100 comments
     reddit(url).get({sort: 'new', limit: 100}).then(function(result) {
@@ -60,7 +90,8 @@ function run(){
       comments.forEach((comment) => {
         var commentBody = comment.data.body;
         if(/WinnieBot!/.test(commentBody)){
-          Logger.header('Match Found! Comment ' + comment.data.id + ' in Thread ' + comment.data.link_id);
+          Logger.headerLarge('Match Found! Comment ' + comment.data.id + ' in Thread ' + comment.data.link_id);
+          Logger.headerSmall('Matching Comment Info');
           console.info(comment);
 
           promises.push((callback) => {
