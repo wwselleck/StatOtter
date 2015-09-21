@@ -1,0 +1,24 @@
+{
+  "name": "winnie-bot",
+  "version": "0.0.1",
+  "description": "Reddit thread analysis bot",
+  "main": "app.js",
+  "dependencies": {
+    "async": "^1.4.2",
+    "snoocore": "^3.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wwselleck/WinnieBot.git"
+  },
+  "author": "Weston Selleck",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wwselleck/WinnieBot/issues"
+  },
+  "homepage": "https://github.com/wwselleck/WinnieBot#readme"
+}

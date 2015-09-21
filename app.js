@@ -3,7 +3,7 @@ var async = require('async');
 
 var config = require('./config.json');
 var Logger = require('./logger.js');
-
+var Util = require('./util.js');
 var reddit = new Snoocore({
   userAgent: '/u/WinnieBot WinnieBot@0.0.0', // unique string identifying the app
   oauth: {
@@ -30,7 +30,10 @@ function analyzeComment(comment, stats){
   var author = commentData.author;
   stats.commenters[author] ? stats.commenters[author] += 1 : stats.commenters[author] = 1;
 
-  var words = commentData.body.split(" ");
+  var correctedBody = Util.replaceAll(commentData.body, {
+    '\n': ' ',
+  });
+  var words = correctedBody.split(" ");
   words.forEach(word => {
     stats.words[word] ? stats.words[word] += 1 : stats.words[word] = 1;
   });
@@ -71,7 +74,7 @@ function analyzeAndPost(comment){
           analyzeComment(currentComment, stats);
         }
       });
-
+      Logger.headerMedium('Analysis Complete! Reporting stats...');
       console.log(stats);
 
       });
