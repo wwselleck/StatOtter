@@ -58,7 +58,7 @@ class WinnieBot{
     var parentPostId = comment.data.link_id.slice(3);
     var parentPostUrl = '/r/' + comment.data.subreddit + '/comments/' + parentPostId;
 
-    return this.reddit.get(parentPostUrl).then(link => {
+    return this.reddit.get(parentPostUrl, {sort: 'top'}).then(link => {
       console.log(link);
       var linkListing = link[0];
       var commentsListing = link[1];
@@ -80,43 +80,38 @@ class WinnieBot{
         flairCount: {}
       };
 
-      return this.getAllComments(commentsListing).then(comments => {
+      return this._getAllComments(commentsListing).then(comments => {
         return this._processComments(comments, stats);
       });
 
     });
   }
 
-  getAllComments(commentListing){
+  _getAllComments(commentListing){
     return new Promise((resolve, reject) => {
       var ret = [];
       var morePromises = [];
 
       commentListing.data.children.forEach(comment => {
-        if(comment.kind === 't1'){
-          Logger.headerSmall('Adding comment to comment list...');
-          console.log(comment);
-
-          ret.push(comment);
-        }
-        if(comment.data.replies){
-          var replies = comment.data.replies.data.children;
-          replies.forEach(reply => {
-            console.log(reply);
-          });
-        }
-        else{
-          Logger.headerSmall('More comment found...');
-          console.log(comment);
-
-          morePromises.push(callback => {
-            this.reddit.getMore();
-          });
-        }
+        this._addComment(comment, ret);
       });
       resolve(ret);
     });
-    
+  }
+
+  _addComment(comment, list){
+    if(comment.kind === 't1'){
+      Logger.headerSmall('Adding comment to comment list...');
+      console.log(comment);
+
+      list.push(comment);
+    }
+    if(comment.data.replies){
+      var replies = comment.data.replies.data.children;
+      replies.forEach(reply => {
+        this._addComment(reply, list);
+      });
+    }
   }
 
   _processComments(comments, stats){
