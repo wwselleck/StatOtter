@@ -9,7 +9,7 @@ class Logger():
         print("= {:s}".format(text))
         print("=======================================")
 
-    def loglarge(self, text):
+    def logLarge(self, text):
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         print("> {:s}".format(text))
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
