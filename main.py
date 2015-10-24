@@ -10,6 +10,7 @@ if __name__ == "__main__":
     print(config)
     user_agent = "StatOtter v{:s} by {:s} [{:s}]".format(config['version'], config['author'], config['email'])
     r = praw.Reddit(user_agent=user_agent)
+    r.login()
     modes = {
         "thread": ThreadMode(r, Logger())
     }

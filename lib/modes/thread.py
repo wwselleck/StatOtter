@@ -1,5 +1,6 @@
 from lib.modes.mode import Mode
 from lib.stats import CounterStat
+from lib.reddithelpers import dictionary_to_table
 from pprint import pprint
 import praw
 import re
@@ -17,7 +18,9 @@ class WordCount(CounterStat):
 
 class AuthorCommentsCount(CounterStat):
     def f(self, comment):
-        self._counter[comment.author.name] += 1
+        pprint(vars(comment))
+        if comment.author:
+            self._counter[comment.author.name] += 1
 
 class FlairCount(CounterStat):
     def f(self, comment):
@@ -62,5 +65,10 @@ class ThreadMode(Mode):
             self.logger.logSmall(s.title)
             pprint(s.data)
 
-    def _sort_dict_by_values(self, d):
-        return sorted(d.items(), key=operator.itemgetter(1), reverse=True)
+        comment.reply(self._report(comment, self.stats[0].data))
+
+    def _report(self, comment, data):
+        s = dictionary_to_table(data, 'Word', 'Number of Times Used')
+        return s
+
+
